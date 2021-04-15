@@ -372,8 +372,7 @@ samplesCommon::OnnxSampleParams initializeSampleParams()
 
 EiTrt* libeitrt::create_EiTrt(const char* model_file_name, bool debug)
 {
-    // TODO set debug level: kERROR
-    // sample::setReportableSeverity(
+    if(!debug) { sample::setReportableSeverity( ILogger::Severity::kERROR ); }
     sample::gLogInfo << "EI TensorRT lib v1.4" << std::endl;
     auto handle = new EiTrt(initializeSampleParams());
     // TODO proper error checking and return null
