@@ -64,13 +64,13 @@ COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install -r /tmp/requirements.txt
 
 # Download NGC client
-RUN cd /usr/local/bin && wget https://ngc.nvidia.com/downloads/ngccli_cat_linux.zip && unzip ngccli_cat_linux.zip && chmod u+x ngc && rm ngccli_cat_linux.zip ngc.md5 && echo "no-apikey\nascii\n" | ngc config set
+RUN cd /usr/local/bin && wget https://ngc.nvidia.com/downloads/ngccli_cat_linux.zip && unzip ngccli_cat_linux.zip && chmod u+x ngc-cli/ngc && rm ngccli_cat_linux.zip ngc-cli.md5 && echo "no-apikey\nascii\n" | ngc-cli/ngc config set
 
 # Put the lib I had to get off of Jetson
 COPY docker/libnvrtc.so.10.2 /usr/local/cuda-10.2/targets/aarch64-linux/lib/
 
 # Get nvidia libs (they came from SDK manager, I've unpacked and copied to S3
-RUN cd / && wget https://edge-impulse-cdn-prod-new.s3-eu-west-1.amazonaws.com/pdk_files.zip
+RUN cd / && wget https://cdn.edgeimpulse.com/build-system/pdk_files.zip
 RUN unzip pdk_files.zip
 
 COPY scripts/stubify.sh /pdk_files
@@ -96,7 +96,11 @@ RUN cd /pdk_files/tensorrt \
     && ln -s usr/lib/aarch64-linux-gnu lib 
 
 # Get the cross compiler
-RUN cd /pdk_files && wget https://edge-impulse-cdn-prod-new.s3-eu-west-1.amazonaws.com/cuda-repo-cross-aarch64-10-2-local-10.2.89_1.0-1_all.deb
+RUN cd /pdk_files && wget https://cdn.edgeimpulse.com/build-system/cuda-repo-cross-aarch64-10-2-local-10.2.89_1.0-1_all.deb
+
+# Update CUDA signing keys
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
 
 # # Install CUDA cross compile toolchain
 RUN sudo chmod 777 /pdk_files/cuda-repo-cross-aarch64-10-2-local-10.2.89_1.0-1_all.deb && \

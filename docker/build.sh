@@ -37,7 +37,8 @@ if [ "$arg_help" -eq "1" ]; then
     exit;
 fi
 
-docker_args="-f $arg_dockerfile --build-arg CUDA_VERSION=$arg_cudaversion --build-arg uid=$(id -u) --build-arg gid=$(id -g) --tag=$arg_imagename ."
+# --platform linux/amd64 flag is for running on M1
+docker_args="-f $arg_dockerfile --platform linux/amd64 --build-arg CUDA_VERSION=$arg_cudaversion --build-arg uid=$(id -u) --build-arg gid=$(id -g) --tag=$arg_imagename ."
 
 echo "Building container:"
 echo "> docker build $docker_args"
