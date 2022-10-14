@@ -1,5 +1,144 @@
 # TensorRT OSS Release Changelog
 
+## [21.09](https://github.com/NVIDIA/TensorRT/releases/tag/21.08) - 2021-09-22
+### Added
+- Add `ONNX2TRT_VERSION` overwrite in CMake.
+
+### Changed
+- Updates to TensorRT developer tools
+  - ONNX-GraphSurgeon [v0.3.12](tools/onnx-graphsurgeon/CHANGELOG.md#v0312-2021-08-24)
+  - pytorch-quantization toolkit [v2.1.1](tools/pytorch-quantization)
+- Fix assertion in EfficientNMSPlugin
+
+### Removed
+- N/A
+
+## [21.08](https://github.com/NVIDIA/TensorRT/releases/tag/21.08) - 2021-08-05
+### Added
+
+- Add demoBERT and demoBERT-MT (sparsity) benchmark data for TensorRT 8.
+- Added example python notebooks
+  - [BERT - Q&A with TensorRT](demo/BERT/notebooks)
+  - [EfficientNet - Object Detection with TensorRT](demo/EfficientDet/notebooks)
+
+### Changed
+- Updated samples and plugins directory structure
+- Updates to TensorRT developer tools
+  - Polygraphy [v0.31.1](tools/Polygraphy/CHANGELOG.md#v0311-2021-07-16)
+  - ONNX-GraphSurgeon [v0.3.11](tools/onnx-graphsurgeon/CHANGELOG.md#v0311-2021-07-14)
+  - pytorch-quantization toolkit [v2.1.1](tools/pytorch-quantization)
+- README fix to update build command for native aarch64 builds.
+
+### Removed
+- N/A
+
+## [21.07](https://github.com/NVIDIA/TensorRT/releases/tag/21.07) - 2021-07-21
+Identical to the TensorRT-OSS [8.0.1](https://github.com/NVIDIA/TensorRT/releases/tag/8.0.1) Release.
+
+## [8.0.1](https://docs.nvidia.com/deeplearning/tensorrt/release-notes/tensorrt-8.html#tensorrt-8) - 2021-07-02
+### Added
+- Added support for the following ONNX operators: `Celu`, `CumSum`, `EyeLike`, `GatherElements`, `GlobalLpPool`, `GreaterOrEqual`, `LessOrEqual`, `LpNormalization`, `LpPool`, `ReverseSequence`, and `SoftmaxCrossEntropyLoss` [details](). 
+- Rehauled `Resize` ONNX operator, now fully supporting the following modes:
+  - Coordinate Transformation modes: `half_pixel`, `pytorch_half_pixel`, `tf_half_pixel_for_nn`, `asymmetric`, and `align_corners`.
+  - Modes: `nearest`, `linear`.
+  - Nearest Modes: `floor`, `ceil`, `round_prefer_floor`, `round_prefer_ceil`.
+- Added support for multi-input ONNX `ConvTranpose` operator.
+- Added support for 3D spatial dimensions in ONNX `InstanceNormalization`.
+- Added support for generic 2D padding in ONNX.
+- ONNX `QuantizeLinear` and `DequantizeLinear` operators leverage `IQuantizeLayer` and `IDequantizeLayer`.
+  - Added support for tensor scales.
+  - Added support for per-axis quantization.
+- Added `EfficientNMS_TRT`, `EfficientNMS_ONNX_TRT` plugins and experimental support for ONNX `NonMaxSuppression` operator.
+- Added `ScatterND` plugin.
+- Added TensorRT [QuickStart Guide](https://github.com/NVIDIA/TensorRT/tree/master/quickstart).
+- Added new samples: [engine_refit_onnx_bidaf](https://docs.nvidia.com/deeplearning/tensorrt/sample-support-guide/index.html#engine_refit_onnx_bidaf) builds an engine from ONNX BiDAF model and refits engine with new weights, [efficientdet](samples/python/efficientdet) and [efficientnet](samples/python/efficientnet) samples for demonstrating Object Detection using TensorRT.
+- Added support for Ubuntu20.04 and RedHat/CentOS 8.3.
+- Added Python 3.9 support.
+
+### Changed
+- Update Polygraphy to [v0.30.3](tools/Polygraphy/CHANGELOG.md#v0303-2021-06-25).
+- Update ONNX-GraphSurgeon to [v0.3.10](tools/onnx-graphsurgeon/CHANGELOG.md#v0310-2021-05-20).
+- Update Pytorch Quantization toolkit to v2.1.0.
+- Notable TensorRT API updates
+  - TensorRT now declares API’s with the `noexcept` keyword. All TensorRT classes that an application inherits from (such as IPluginV2) must guarantee that methods called by TensorRT do not throw uncaught exceptions, or the behavior is undefined.
+  - Destructors for classes with `destroy()` methods were previously protected. They are now public, enabling use of smart pointers for these classes. The `destroy()` methods are deprecated.
+- Moved `RefitMap` API from ONNX parser to core TensorRT.
+- Various bugfixes for plugins, samples and ONNX parser.
+- Port demoBERT to tensorflow2 and update UFF samples to leverage nvidia-tensorflow1 container.
+
+### Removed
+- `IPlugin` and `IPluginFactory` interfaces were deprecated in TensorRT 6.0 and have been removed in TensorRT 8.0. We recommend that you write new plugins or refactor existing ones to target the `IPluginV2DynamicExt` and `IPluginV2IOExt` interfaces. For more information, refer to [Migrating Plugins From TensorRT 6.x Or 7.x To TensorRT 8.x.x](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#migrating-plugins-6x-7x-to-8x).
+  - For plugins based on `IPluginV2DynamicExt` and `IPluginV2IOExt`, certain methods with legacy function signatures (derived from `IPluginV2` and `IPluginV2Ext` base classes) which were deprecated and marked for removal in TensorRT 8.0 will no longer be available.
+- Removed `samplePlugin` since it showcased IPluginExt interface, which is no longer supported in TensorRT 8.0.
+- Removed `sampleMovieLens` and `sampleMovieLensMPS`.
+- Removed Dockerfile for Ubuntu 16.04. TensorRT 8.0 debians for Ubuntu 16.04 require python 3.5 while minimum required python version for TensorRT OSS is 3.6.
+- Removed support for PowerPC builds, consistent with TensorRT GA releases.
+
+### Notes
+- We had deprecated the Caffe Parser and UFF Parser in TensorRT 7.0. They are still tested and functional in TensorRT 8.0, however, we plan to remove the support in a future release. Ensure you migrate your workflow to use `tf2onnx`, `keras2onnx` or [TensorFlow-TensorRT (TF-TRT)](https://docs.nvidia.com/deeplearning/frameworks/tf-trt-user-guide/index.html).
+- Refer to [TensorRT 8.0.1 GA Release Notes](https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-801/release-notes/tensorrt-8.html#rel_8-0-1) for additional details
+
+
+## [21.06](https://github.com/NVIDIA/TensorRT/releases/tag/21.06) - 2021-06-23
+### Added
+- Add switch for batch-agnostic mode in NMS plugin
+- Add missing model.py in `uff_custom_plugin` sample
+
+### Changed
+- Update to [Polygraphy v0.29.2](tools/Polygraphy/CHANGELOG.md#v0292-2021-04-30)
+- Update to [ONNX-GraphSurgeon v0.3.9](tools/onnx-graphsurgeon/CHANGELOG.md#v039-2021-04-20)
+- Fix numerical errors for float type in NMS/batchedNMS plugins
+- Update demoBERT input dimensions to match Triton requirement [#1051](https://github.com/NVIDIA/TensorRT/pull/1051)
+- Optimize TLT MaskRCNN plugins:
+  - enable fp16 precision in multilevelCropAndResizePlugin and multilevelProposeROIPlugin
+  - Algorithms optimization for NMS kernels and ROIAlign kernel
+  - Fix invalid cuda config issue when bs is larger than 32
+  - Fix issues found  on Jetson NANO
+
+### Removed
+- Removed fcplugin from demoBERT to improve latency
+
+
+## [21.05](https://github.com/NVIDIA/TensorRT/releases/tag/21.05) - 2021-05-20
+### Added
+- Extended support for ONNX operator `InstanceNormalization` to 5D tensors
+- Support negative indices in ONNX `Gather` operator
+- Add support for importing ONNX double-typed weights as float
+- [ONNX-GraphSurgeon (v0.3.7)](tools/onnx-graphsurgeon/CHANGELOG.md#v037-2021-03-31) support for models with externally stored weights
+
+### Changed
+- Update ONNX-TensorRT to [21.05](https://github.com/onnx/onnx-tensorrt/releases/tag/21.05)
+- [Relicense ONNX-TensorRT](https://github.com/onnx/onnx-tensorrt/blob/master/LICENSE) under Apache2
+- demoBERT builder fixes for multi-batch
+- Speedup demoBERT build using global timing cache and disable cuDNN tactics
+- Standardize python package versions across OSS samples
+- Bugfixes in multilevelProposeROI and bertQKV plugin
+- Fix memleaks in samples logger
+
+
+## [21.04](https://github.com/NVIDIA/TensorRT/releases/tag/21.04) - 2021-04-12
+### Added
+- SM86 kernels for BERT MHA plugin
+- Added opset13 support for `SoftMax`, `LogSoftmax`, `Squeeze`, and `Unsqueeze`.
+- Added support for the `EyeLike` and `GatherElements` operators.
+
+### Changed
+- Updated TensorRT version to v7.2.3.4.
+- Update to ONNX-TensorRT [21.03](https://github.com/onnx/onnx-tensorrt/releases/tag/21.03)
+- ONNX-GraphSurgeon (v0.3.4) - updates fold_constants to correctly exit early.
+- Set default CUDA_INSTALL_DIR [#798](https://github.com/NVIDIA/TensorRT/pull/798)
+- Plugin bugfixes, qkv kernels for sm86
+- Fixed GroupNorm CMakeFile for cu sources [#1083](https://github.com/NVIDIA/TensorRT/pull/1083)
+- Permit groupadd with non-unique GID in build containers [#1091](https://github.com/NVIDIA/TensorRT/pull/1091)
+- Avoid `reinterpret_cast` [#146](https://github.com/NVIDIA/TensorRT/pull/146)
+- Clang-format plugins and samples
+- Avoid arithmetic on void pointer in multilevelProposeROIPlugin.cpp [#1028](https://github.com/NVIDIA/TensorRT/pull/1028)
+- Update BERT plugin documentation.
+
+### Removed
+- Removes extra terminate call in InstanceNorm
+
+
 ## [21.03](https://github.com/NVIDIA/TensorRT/releases/tag/21.03) - 2021-03-09
 ### Added
 - Optimized FP16 NMS/batchedNMS plugins with n-bit radix sort and based on `IPluginV2DynamicExt`

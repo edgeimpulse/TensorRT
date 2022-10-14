@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "nmsPlugin.h"
 #include <cstring>
 #include <iostream>
@@ -38,34 +37,48 @@ PluginFieldCollection NMSBasePluginCreator::mFC{};
 std::vector<PluginField> NMSBasePluginCreator::mPluginAttributes;
 
 // Constrcutor
-DetectionOutput::DetectionOutput(DetectionOutputParameters params) noexcept
+DetectionOutput::DetectionOutput(DetectionOutputParameters params)
     : param(params)
+    , C1(0)
+    , C2(0)
+    , numPriors(0)
+    , mType(DataType::kFLOAT)
+    , mScoreBits(16)
 {
 }
 
-DetectionOutputDynamic::DetectionOutputDynamic(DetectionOutputParameters params) noexcept
+DetectionOutputDynamic::DetectionOutputDynamic(DetectionOutputParameters params)
     : param(params)
+    , C1(0)
+    , C2(0)
+    , numPriors(0)
+    , mType(DataType::kFLOAT)
+    , mScoreBits(16)
 {
 }
 
-DetectionOutput::DetectionOutput(DetectionOutputParameters params, int C1, int C2, int numPriors) noexcept
+DetectionOutput::DetectionOutput(DetectionOutputParameters params, int C1, int C2, int numPriors)
     : param(params)
     , C1(C1)
     , C2(C2)
     , numPriors(numPriors)
+    , mType(DataType::kFLOAT)
+    , mScoreBits(16)
 {
 }
 
-DetectionOutputDynamic::DetectionOutputDynamic(DetectionOutputParameters params, int C1, int C2, int numPriors) noexcept
+DetectionOutputDynamic::DetectionOutputDynamic(DetectionOutputParameters params, int C1, int C2, int numPriors)
     : param(params)
     , C1(C1)
     , C2(C2)
     , numPriors(numPriors)
+    , mType(DataType::kFLOAT)
+    , mScoreBits(16)
 {
 }
 
 // Parameterized constructor
-DetectionOutput::DetectionOutput(const void* data, size_t length) noexcept
+DetectionOutput::DetectionOutput(const void* data, size_t length)
 {
     const char *d = reinterpret_cast<const char*>(data), *a = d;
     param = read<DetectionOutputParameters>(d);
@@ -84,7 +97,7 @@ DetectionOutput::DetectionOutput(const void* data, size_t length) noexcept
     ASSERT(d == a + length);
 }
 
-DetectionOutputDynamic::DetectionOutputDynamic(const void* data, size_t length) noexcept
+DetectionOutputDynamic::DetectionOutputDynamic(const void* data, size_t length)
 {
     const char *d = reinterpret_cast<const char*>(data), *a = d;
     param = read<DetectionOutputParameters>(d);
@@ -139,9 +152,9 @@ Dims DetectionOutput::getOutputDimensions(int index, const Dims* inputs, int nbI
     // index 1: Dimensions 1x1x1
     if (index == 0)
     {
-        return DimsCHW(1, param.keepTopK, 7);
+        return Dims3(1, param.keepTopK, 7);
     }
-    return DimsCHW(1, 1, 1);
+    return Dims3(1, 1, 1);
 }
 
 DimsExprs DetectionOutputDynamic::getOutputDimensions(
@@ -160,15 +173,17 @@ DimsExprs DetectionOutputDynamic::getOutputDimensions(
     if (inputs[C1_idx].d[0]->isConstant() && inputs[C1_idx].d[1]->isConstant() && inputs[C1_idx].d[2]->isConstant()
         && inputs[C1_idx].d[3]->isConstant())
     {
-        C1 = exprBuilder.operation(
-            DimensionOperation::kPROD,
-            *exprBuilder.operation(DimensionOperation::kPROD, *inputs[C1_idx].d[1], *inputs[C1_idx].d[2]),
-            *inputs[C1_idx].d[3])->getConstantValue();
+        C1 = exprBuilder
+                 .operation(DimensionOperation::kPROD,
+                     *exprBuilder.operation(DimensionOperation::kPROD, *inputs[C1_idx].d[1], *inputs[C1_idx].d[2]),
+                     *inputs[C1_idx].d[3])
+                 ->getConstantValue();
     }
 
     if (inputs[C2_idx].d[0]->isConstant() && inputs[C2_idx].d[1]->isConstant() && inputs[C2_idx].d[2]->isConstant())
     {
-        C2 = exprBuilder.operation(DimensionOperation::kPROD, *inputs[C2_idx].d[1], *inputs[C2_idx].d[2])->getConstantValue();
+        C2 = exprBuilder.operation(DimensionOperation::kPROD, *inputs[C2_idx].d[1], *inputs[C2_idx].d[2])
+                 ->getConstantValue();
     }
     // Output dimensions
     // index 0 : Dimensions 1x param.keepTopK x 7
@@ -197,20 +212,20 @@ DimsExprs DetectionOutputDynamic::getOutputDimensions(
 // Returns the workspace size
 size_t DetectionOutput::getWorkspaceSize(int maxBatchSize) const noexcept
 {
-    return detectionInferenceWorkspaceSize(param.shareLocation, maxBatchSize, C1, C2, param.numClasses, numPriors,
-        param.topK, mType, mType);
+    return detectionInferenceWorkspaceSize(
+        param.shareLocation, maxBatchSize, C1, C2, param.numClasses, numPriors, param.topK, mType, mType);
 }
 
 size_t DetectionOutputDynamic::getWorkspaceSize(
     const PluginTensorDesc* inputs, int nbInputs, const PluginTensorDesc* outputs, int nbOutputs) const noexcept
 {
-    return detectionInferenceWorkspaceSize(param.shareLocation, inputs[0].dims.d[0], C1, C2,
-        param.numClasses, numPriors, param.topK, mType, mType);
+    return detectionInferenceWorkspaceSize(
+        param.shareLocation, inputs[0].dims.d[0], C1, C2, param.numClasses, numPriors, param.topK, mType, mType);
 }
 
 // Plugin layer implementation
 int DetectionOutput::enqueue(
-    int batchSize, const void* const* inputs, void** outputs, void* workspace, cudaStream_t stream) noexcept
+    int batchSize, const void* const* inputs, void* const* outputs, void* workspace, cudaStream_t stream) noexcept
 {
     // Input order {loc, conf, prior}
     const void* const locData = inputs[param.inputOrder[0]];
@@ -223,14 +238,12 @@ int DetectionOutput::enqueue(
 
     pluginStatus_t status = detectionInference(stream, batchSize, C1, C2, param.shareLocation,
         param.varianceEncodedInTarget, param.backgroundLabelId, numPriors, param.numClasses, param.topK, param.keepTopK,
-        param.confidenceThreshold, param.nmsThreshold, param.codeType, mType, locData, priorData,
-        mType, confData, keepCount, topDetections, workspace, param.isNormalized, param.confSigmoid,
-        mScoreBits);
-    ASSERT(status == STATUS_SUCCESS);
-    return 0;
+        param.confidenceThreshold, param.nmsThreshold, param.codeType, mType, locData, priorData, mType, confData,
+        keepCount, topDetections, workspace, param.isNormalized, param.confSigmoid, mScoreBits, param.isBatchAgnostic);
+    return status;
 }
 
-int DetectionOutputDynamic::enqueue(const PluginTensorDesc* inputDesc, const PluginTensorDesc* outputDesc,
+int32_t DetectionOutputDynamic::enqueue(const PluginTensorDesc* inputDesc, const PluginTensorDesc* outputDesc,
     const void* const* inputs, void* const* outputs, void* workspace, cudaStream_t stream) noexcept
 {
     // Input order {loc, conf, prior}
@@ -244,11 +257,9 @@ int DetectionOutputDynamic::enqueue(const PluginTensorDesc* inputDesc, const Plu
 
     pluginStatus_t status = detectionInference(stream, inputDesc[0].dims.d[0], C1, C2, param.shareLocation,
         param.varianceEncodedInTarget, param.backgroundLabelId, numPriors, param.numClasses, param.topK, param.keepTopK,
-        param.confidenceThreshold, param.nmsThreshold, param.codeType, mType, locData, priorData,
-        mType, confData, keepCount, topDetections, workspace, param.isNormalized, param.confSigmoid,
-        mScoreBits);
-    ASSERT(status == STATUS_SUCCESS);
-    return 0;
+        param.confidenceThreshold, param.nmsThreshold, param.codeType, mType, locData, priorData, mType, confData,
+        keepCount, topDetections, workspace, param.isNormalized, param.confSigmoid, mScoreBits, false);
+    return status;
 }
 
 // Returns the size of serialized parameters
@@ -292,10 +303,7 @@ void DetectionOutputDynamic::serialize(void* buffer) const noexcept
 // Check if the DataType and Plugin format is supported
 bool DetectionOutput::supportsFormat(DataType type, PluginFormat format) const noexcept
 {
-    return (
-        (type == DataType::kHALF || type == DataType::kFLOAT) &&
-        format == PluginFormat::kNCHW
-    );
+    return ((type == DataType::kHALF || type == DataType::kFLOAT) && format == PluginFormat::kLINEAR);
 }
 
 bool DetectionOutputDynamic::supportsFormatCombination(
@@ -308,10 +316,18 @@ bool DetectionOutputDynamic::supportsFormatCombination(
     const bool consistentFloatPrecision = (in[0].type == in[pos].type);
     switch (pos)
     {
-    case 0: return (in[0].type == DataType::kHALF || in[0].type == DataType::kFLOAT) && in[0].format == PluginFormat::kLINEAR && consistentFloatPrecision;
-    case 1: return (in[1].type == DataType::kHALF || in[1].type == DataType::kFLOAT) && in[1].format == PluginFormat::kLINEAR && consistentFloatPrecision;
-    case 2: return (in[2].type == DataType::kHALF || in[2].type == DataType::kFLOAT) && in[2].format == PluginFormat::kLINEAR && consistentFloatPrecision;
-    case 3: return (out[0].type == DataType::kHALF || out[0].type == DataType::kFLOAT) && out[0].format == PluginFormat::kLINEAR && consistentFloatPrecision;
+    case 0:
+        return (in[0].type == DataType::kHALF || in[0].type == DataType::kFLOAT)
+            && in[0].format == PluginFormat::kLINEAR && consistentFloatPrecision;
+    case 1:
+        return (in[1].type == DataType::kHALF || in[1].type == DataType::kFLOAT)
+            && in[1].format == PluginFormat::kLINEAR && consistentFloatPrecision;
+    case 2:
+        return (in[2].type == DataType::kHALF || in[2].type == DataType::kFLOAT)
+            && in[2].format == PluginFormat::kLINEAR && consistentFloatPrecision;
+    case 3:
+        return (out[0].type == DataType::kHALF || out[0].type == DataType::kFLOAT)
+            && out[0].format == PluginFormat::kLINEAR && consistentFloatPrecision;
     case 4: return out[1].type == DataType::kFLOAT && out[1].format == PluginFormat::kLINEAR;
     }
     return false;
@@ -413,7 +429,8 @@ DataType DetectionOutput::getOutputDataType(int index, const nvinfer1::DataType*
     ASSERT(index == 0 || index == 1);
     ASSERT(inputTypes[0] == inputTypes[1] && inputTypes[2] == inputTypes[1]);
     // topDetections
-    if (index == 0) {
+    if (index == 0)
+    {
         return inputTypes[0];
     }
     // keepCount: use kFLOAT instead as they have same sizeof(type)
@@ -427,7 +444,8 @@ DataType DetectionOutputDynamic::getOutputDataType(int index, const nvinfer1::Da
     ASSERT(index == 0 || index == 1);
     ASSERT(inputTypes[0] == inputTypes[1] && inputTypes[2] == inputTypes[1]);
     // topDetections
-    if (index == 0) {
+    if (index == 0)
+    {
         return inputTypes[0];
     }
     // keepCount: use kFLOAT instead as they have same sizeof(type)
@@ -540,7 +558,7 @@ void DetectionOutput::attachToContext(
 void DetectionOutput::detachFromContext() noexcept {}
 
 // Plugin creator constructor
-NMSBasePluginCreator::NMSBasePluginCreator() noexcept
+NMSBasePluginCreator::NMSBasePluginCreator()
 {
     // NMS Plugin field meta data {name,  data, type, length}
     mPluginAttributes.clear();
@@ -557,22 +575,23 @@ NMSBasePluginCreator::NMSBasePluginCreator() noexcept
     mPluginAttributes.emplace_back(PluginField("isNormalized", nullptr, PluginFieldType::kINT32, 1));
     mPluginAttributes.emplace_back(PluginField("codeType", nullptr, PluginFieldType::kINT32, 1));
     mPluginAttributes.emplace_back(PluginField("scoreBits", nullptr, PluginFieldType::kINT32, 1));
+    mPluginAttributes.emplace_back(PluginField("isBatchAgnostic", nullptr, PluginFieldType::kINT32, 1));
     mFC.nbFields = mPluginAttributes.size();
     mFC.fields = mPluginAttributes.data();
 }
 
-NMSPluginCreator::NMSPluginCreator() noexcept
+NMSPluginCreator::NMSPluginCreator()
 {
     mPluginName = NMS_PLUGIN_NAMES[0];
 }
 
-NMSDynamicPluginCreator::NMSDynamicPluginCreator() noexcept
+NMSDynamicPluginCreator::NMSDynamicPluginCreator()
 {
     mPluginName = NMS_PLUGIN_NAMES[1];
 }
 
 // Returns the plugin name
-const char* NMSBasePluginCreator::getPluginName() const noexcept 
+const char* NMSBasePluginCreator::getPluginName() const noexcept
 {
     return mPluginName.c_str();
 }
@@ -673,6 +692,11 @@ IPluginV2Ext* NMSPluginCreator::createPlugin(const char* name, const PluginField
         {
             ASSERT(fields[i].type == PluginFieldType::kINT32);
             mScoreBits = *(static_cast<const int32_t*>(fields[i].data));
+        }
+        else if (!strcmp(attrName, "isBatchAgnostic"))
+        {
+            ASSERT(fields[i].type == PluginFieldType::kINT32);
+            params.isBatchAgnostic = static_cast<int>(*(static_cast<const int*>(fields[i].data)));
         }
     }
 

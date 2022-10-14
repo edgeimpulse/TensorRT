@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef TRT_NMS_PLUGIN_H
 #define TRT_NMS_PLUGIN_H
 #include "kernel.h"
@@ -31,13 +30,13 @@ namespace plugin
 class DetectionOutput : public IPluginV2Ext
 {
 public:
-    DetectionOutput(DetectionOutputParameters param) noexcept;
+    DetectionOutput(DetectionOutputParameters param);
 
-    DetectionOutput(DetectionOutputParameters param, int C1, int C2, int numPriors) noexcept;
+    DetectionOutput(DetectionOutputParameters param, int C1, int C2, int numPriors);
 
-    DetectionOutput(const void* data, size_t length) noexcept;
+    DetectionOutput(const void* data, size_t length);
 
-    ~DetectionOutput() noexcept override = default;
+    ~DetectionOutput() override = default;
 
     int getNbOutputs() const noexcept override;
 
@@ -49,8 +48,8 @@ public:
 
     size_t getWorkspaceSize(int maxBatchSize) const noexcept override;
 
-    int enqueue(
-        int batchSize, const void* const* inputs, void** outputs, void* workspace, cudaStream_t stream) noexcept override;
+    int enqueue(int batchSize, const void* const* inputs, void* const* outputs, void* workspace,
+        cudaStream_t stream) noexcept override;
 
     size_t getSerializationSize() const noexcept override;
 
@@ -98,10 +97,10 @@ private:
 class DetectionOutputDynamic : public IPluginV2DynamicExt
 {
 public:
-    DetectionOutputDynamic(DetectionOutputParameters param) noexcept;
-    DetectionOutputDynamic(DetectionOutputParameters param, int C1, int C2, int numPriors) noexcept;
-    DetectionOutputDynamic(const void* data, size_t length) noexcept;
-    ~DetectionOutputDynamic() noexcept override = default;
+    DetectionOutputDynamic(DetectionOutputParameters param);
+    DetectionOutputDynamic(DetectionOutputParameters param, int C1, int C2, int numPriors);
+    DetectionOutputDynamic(const void* data, size_t length);
+    ~DetectionOutputDynamic() override = default;
 
     // IPluginV2 methods
     const char* getPluginType() const noexcept override;
@@ -122,13 +121,14 @@ public:
     // IPluginV2DynamicExt methods
     IPluginV2DynamicExt* clone() const noexcept override;
     DimsExprs getOutputDimensions(
-        int outputIndex, const DimsExprs* inputs, int nbInputs, IExprBuilder& exprBuilder)  noexcept override;
-    bool supportsFormatCombination(int pos, const PluginTensorDesc* inOut, int nbInputs, int nbOutputs) noexcept override;
-    void configurePlugin(
-        const DynamicPluginTensorDesc* in, int nbInputs, const DynamicPluginTensorDesc* out, int nbOutputs) noexcept override;
-    size_t getWorkspaceSize(
-        const PluginTensorDesc* inputs, int nbInputs, const PluginTensorDesc* outputs, int nbOutputs) const noexcept override;
-    int enqueue(const PluginTensorDesc* inputDesc, const PluginTensorDesc* outputDesc, const void* const* inputs,
+        int outputIndex, const DimsExprs* inputs, int nbInputs, IExprBuilder& exprBuilder) noexcept override;
+    bool supportsFormatCombination(
+        int pos, const PluginTensorDesc* inOut, int nbInputs, int nbOutputs) noexcept override;
+    void configurePlugin(const DynamicPluginTensorDesc* in, int nbInputs, const DynamicPluginTensorDesc* out,
+        int nbOutputs) noexcept override;
+    size_t getWorkspaceSize(const PluginTensorDesc* inputs, int nbInputs, const PluginTensorDesc* outputs,
+        int nbOutputs) const noexcept override;
+    int32_t enqueue(const PluginTensorDesc* inputDesc, const PluginTensorDesc* outputDesc, const void* const* inputs,
         void* const* outputs, void* workspace, cudaStream_t stream) noexcept override;
 
 private:
@@ -142,8 +142,8 @@ private:
 class NMSBasePluginCreator : public BaseCreator
 {
 public:
-    NMSBasePluginCreator() noexcept;
-    ~NMSBasePluginCreator() noexcept override = default;
+    NMSBasePluginCreator();
+    ~NMSBasePluginCreator() override = default;
     const char* getPluginName() const noexcept override;
     const char* getPluginVersion() const noexcept override;
     const PluginFieldCollection* getFieldNames() noexcept override;
@@ -160,8 +160,8 @@ protected:
 class NMSPluginCreator : public NMSBasePluginCreator
 {
 public:
-    NMSPluginCreator() noexcept;
-    ~NMSPluginCreator() noexcept override = default;
+    NMSPluginCreator();
+    ~NMSPluginCreator() override = default;
     IPluginV2Ext* createPlugin(const char* name, const PluginFieldCollection* fc) noexcept override;
     IPluginV2Ext* deserializePlugin(const char* name, const void* serialData, size_t serialLength) noexcept override;
 };
@@ -169,10 +169,11 @@ public:
 class NMSDynamicPluginCreator : public NMSBasePluginCreator
 {
 public:
-    NMSDynamicPluginCreator() noexcept;
-    ~NMSDynamicPluginCreator() noexcept override = default;
+    NMSDynamicPluginCreator();
+    ~NMSDynamicPluginCreator() override = default;
     IPluginV2DynamicExt* createPlugin(const char* name, const PluginFieldCollection* fc) noexcept override;
-    IPluginV2DynamicExt* deserializePlugin(const char* name, const void* serialData, size_t serialLength) noexcept override;
+    IPluginV2DynamicExt* deserializePlugin(
+        const char* name, const void* serialData, size_t serialLength) noexcept override;
 };
 
 } // namespace plugin

@@ -3,6 +3,73 @@
 Dates are in YYYY-MM-DD format.
 
 
+## v0.3.12 (2021-08-24)
+### Added
+- Added support for `Cast` elision in `fold_constants()`.
+
+### Fixed
+- Fixed a bug where the IR version of an ONNX model would not be preserved during export.
+
+
+## v0.3.11 (2021-07-14)
+### Changed
+- Updated `fold_constants()` so that it no longer fails if a shape folding pass fails when `error_ok` is `True`.
+
+### Fixed
+- Fixed a bug where `fold_constants()` would fail if a model contained a `Slice` node without a `starts` or `ends` input.
+
+
+## v0.3.10 (2021-05-20)
+### Added
+-  Added support for folding `Shape -> Slice` patterns even when the entire shape may not be known.
+
+
+## v0.3.9 (2021-04-20)
+### Changed
+- `fold_constants()` will no longer store values for foldable tensors whose outputs are all foldable.
+    For example, while folding a constant subgraph like `A (constant) -> B -> C`, previously, `B` values
+    would be computed in addition to `C`. With these changes, only `C` values are computed and stored.
+    This can reduce memory usage significantly.
+
+
+## v0.3.8 (2021-04-15)
+### Fixed
+- Fixed a bug where `copy()` would not work with subgraphs that included tensors with the same
+    names as outer graph tensors unless a `tensor_map` was provided.
+
+
+## v0.3.7 (2021-03-31)
+### Added
+- `fold_constants()` can now fold `Shape -> Gather` patterns even when the entire shape may not be known.
+- Added an `error_ok` parameter in `fold_constants()` which can be set to `False` to re-raise errors encountered
+    during inference.
+
+### Fixed
+- Fixed a bug where `copy()` would not correctly copy tensors in nested graphs.
+- Fixed a bug where `fold_constants()` would attempt to fold nodes including graph attributes even if nodes within
+    the nested graph could not be folded.
+
+
+## v0.3.6 (2021-03-27)
+### Fixed
+- `fold_constants()` no longer loads constant values into numpy arrays. This can save a significant amount of memory.
+- `cleanup()` will no longer remove unused graph inputs by default - this was causing invalid ONNX models to be generated
+    in cases with `Loop` nodes. Set `remove_unused_graph_inputs` to `True` to revert to the old behavior.
+- `cleanup()` will no longer reorder node inputs in cases where they are also graph outputs.
+
+
+## v0.3.5 (2021-03-24)
+### Added
+- Added support for models with externally stored data. See the README for details on how to import and export such models.
+
+### Fixed
+- Operator domains are now preserved when exporting graphs to ONNX.
+
+## v0.3.4 (2021-03-10)
+### Fixed
+- `fold_constants` will no longer attempt to run inference if there are no constants to compute.
+
+
 ## v0.3.3 (2021-03-04)
 ### Fixed
 - Fixed a bug in `fold_constants` where it would fail if ONNX-Runtime could not run a node with constant inputs.
