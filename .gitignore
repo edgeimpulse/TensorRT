@@ -7,3 +7,6 @@ build/
 *.vcxproj
 externals/
 .vscode
+jetpack_files/
+pdk_files/
+docker/libei_debug.a
