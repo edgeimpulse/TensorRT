@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  *  Modified 2021 Edge Impulse
  */
 
@@ -148,12 +148,12 @@ ICudaEngine* EiTrt::createCudaEngine(const char* model_file_name)
 
 ICudaEngine* EiTrt::getCudaEngine(const char* model_file_name)
 {
-    string enginePath{model_file_name}; 
+    string enginePath{model_file_name};
     enginePath += ".engine";
     ICudaEngine* engine{nullptr};
 
     string buffer = readBuffer(enginePath);
-    
+
     if (buffer.size())
     {
         // Try to deserialize engine.
@@ -248,7 +248,7 @@ bool EiTrt::constructNetwork(SampleUniquePtr<nvinfer1::IBuilder>& builder,
     if (mParams.int8)
     {
         config->setFlag(BuilderFlag::kINT8);
-        samplesCommon::setAllTensorScales(network.get(), 127.0f, 127.0f);
+        samplesCommon::setAllDynamicRanges(network.get(), 127.0f, 127.0f);
     }
 
     samplesCommon::enableDLA(builder.get(), config.get(), mParams.dlaCore);
@@ -262,7 +262,7 @@ bool EiTrt::constructNetwork(SampleUniquePtr<nvinfer1::IBuilder>& builder,
 //! \details This function is the main execution function of the sample. It allocates the buffer,
 //!          sets inputs and executes the engine.
 //!
-bool EiTrt::infer(float* input, float* output, int output_size) 
+bool EiTrt::infer(float* input, float* output, int output_size)
 {
     // Create RAII buffer manager object
     samplesCommon::BufferManager buffers(mEngine);
@@ -285,11 +285,11 @@ bool EiTrt::infer(float* input, float* output, int output_size)
     }
 
     auto end = chrono::steady_clock::now();
- 
+
     sample::gLogInfo << "Elapsed inference time in nanoseconds : "
         << chrono::duration_cast<chrono::nanoseconds>(end - start).count()
         << " ns" << endl;
- 
+
     sample::gLogInfo << "Elapsed time in microseconds : "
         << chrono::duration_cast<chrono::microseconds>(end - start).count()
         << " µs" << endl;
@@ -319,7 +319,7 @@ bool EiTrt::processInput(const samplesCommon::BufferManager& buffers, float* inp
         sample::gLogError << "failed to get buffer by input tensor name." << endl;
         return false;
     }
- 
+
     return true;
 }
 
@@ -354,7 +354,7 @@ bool EiTrt::reportOutput(const samplesCommon::BufferManager& buffers, float* out
     } else {
         sample::gLogError << " Failed to get buffer by output tensor name";
         return false;
-    }  
+    }
 }
 
 //!

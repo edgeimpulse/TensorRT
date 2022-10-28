@@ -34,6 +34,7 @@ foreach(TYPE MAJOR MINOR PATCH)
 endforeach(TYPE)
 
 set(TRT_VERSION "${TRT_MAJOR}.${TRT_MINOR}.${TRT_PATCH}" CACHE STRING "TensorRT project version")
+set(ONNX2TRT_VERSION "${TRT_MAJOR}.${TRT_MINOR}.${TRT_PATCH}" CACHE STRING "ONNX2TRT project version")
 set(TRT_SOVERSION "${TRT_SO_MAJOR}" CACHE STRING "TensorRT library so version")
 message("Building for TensorRT version: ${TRT_VERSION}, library version: ${TRT_SOVERSION}")
 
@@ -79,8 +80,8 @@ endif()
 ############################################################################################
 # Dependencies
 
-set(DEFAULT_CUDA_VERSION 11.1)
-set(DEFAULT_CUDNN_VERSION 8.0)
+set(DEFAULT_CUDA_VERSION 11.3.1)
+set(DEFAULT_CUDNN_VERSION 8.2)
 set(DEFAULT_PROTOBUF_VERSION 3.0.0)
 set(DEFAULT_CUB_VERSION 1.8.0)
 
