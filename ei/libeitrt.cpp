@@ -339,17 +339,17 @@ bool EiTrt::reportOutput(const samplesCommon::BufferManager& buffers, float* out
         float val{0.0f};
         int idx{0};
 
-        // For some other model, we had to calculate the softmax manually here
-        // For EI model, we already do the softmax in the model
-        sample::gLogInfo << "Output:" << std::endl;
-        for (int i = 0; i < output_size; i++)
-        {
-            sample::gLogInfo << " Prob " << i << "  " << std::fixed << std::setw(5) << std::setprecision(4) << output[i]
-                            << " "
-                            << "Class " << i << ": " << std::string(int(std::floor(output[i] * 10 + 0.5f)), '*')
-                            << std::endl;
-        }
-        sample::gLogInfo << std::endl;
+        // print outputs
+        // disabled for YOLOv5
+        //sample::gLogInfo << "Output:" << std::endl;
+        //for (int i = 0; i < output_size; i++)
+        //{
+        //    sample::gLogInfo << " Prob " << i << "  " << std::fixed << std::setw(5) << std::setprecision(4) << output[i]
+        //                    << " "
+        //                    << "Class " << i << ": " << std::string(int(std::floor(output[i] * 10 + 0.5f)), '*')
+        //                    << std::endl;
+        //}
+        //sample::gLogInfo << std::endl;
         return true;
     } else {
         sample::gLogError << " Failed to get buffer by output tensor name";
