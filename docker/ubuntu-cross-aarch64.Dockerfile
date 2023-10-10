@@ -15,6 +15,11 @@
 ARG CUDA_VERSION=10.2
 ARG OS_VERSION=18.04
 
+# this container does not exist anymore, since it is EOL
+# see https://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/support-policy.md
+# you will need to build and push it to your own repo
+# follow instructions here
+# https://gitlab.com/nvidia/container-images/cuda#building-from-source
 FROM nvidia/cuda:${CUDA_VERSION}-devel-ubuntu${OS_VERSION}
 LABEL maintainer="NVIDIA CORPORATION"
 
@@ -116,13 +121,7 @@ RUN dpkg -x /pdk_files/libnvinfer[0-8]_*-1+cuda10.[0-9]_arm64.deb /pdk_files/ten
 # create stub libraries
 RUN cd /pdk_files/tensorrt \
     && ln -s usr/include/aarch64-linux-gnu include \
-    && ln -s usr/lib/aarch64-linux-gnu lib \
-    && cd lib \
-    && mkdir stubs \
-    && for x in nvinfer nvparsers nvinfer_plugin nvonnxparser; \
-       do                                                     \
-            CC=aarch64-linux-gnu-gcc /pdk_files/stubify.sh lib${x}.so stubs/lib${x}.so \
-       ; done
+    && ln -s usr/lib/aarch64-linux-gnu lib
 
 # Clean up debs
 RUN rm -rf /pdk_files/*.deb

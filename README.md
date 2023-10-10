@@ -1,3 +1,7 @@
+# Edge Impulse TensorRT Wrapper
+
+### To read the instructions for Edge Impulse TensorRT Wrapper go to [ei/README.md](ei/README.md). Below is the original TensorRT OSS components readme file content.
+
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Documentation](https://img.shields.io/badge/TensorRT-documentation-brightgreen.svg)](https://docs.nvidia.com/deeplearning/sdk/tensorrt-developer-guide/index.html)
 
 # TensorRT Open Source Software
