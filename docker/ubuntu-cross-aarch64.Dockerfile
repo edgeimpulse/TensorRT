@@ -73,6 +73,14 @@ COPY scripts/stubify.sh /pdk_files
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
 
+## Fix keys
+RUN mkdir -p /tmp/aarch64 /tmp/ubuntu \
+    && dpkg -x /pdk_files/cuda-repo-cross-aarch64*.deb /tmp/aarch64 \
+    && dpkg -x /pdk_files/cuda-repo-ubuntu*_amd64.deb /tmp/ubuntu \
+    && cp /tmp/aarch64/var/cuda-repo-cross-aarch64-ubuntu2004-11-4-local/cuda-647817BB-keyring.gpg /usr/share/keyrings/ \
+    && cp /tmp/ubuntu/var/cuda-repo-ubuntu2004-11-4-local/cuda-A7CFCDD0-keyring.gpg /usr/share/keyrings \
+    && rm -rf /tmp/aarch64 /tmp/ubuntu
+
 # Install CUDA cross compile toolchain
 RUN dpkg -i /pdk_files/cuda-repo-cross-aarch64*.deb /pdk_files/cuda-repo-ubuntu*_amd64.deb \
     && apt-get update \
@@ -80,9 +88,9 @@ RUN dpkg -i /pdk_files/cuda-repo-cross-aarch64*.deb /pdk_files/cuda-repo-ubuntu*
     && rm -rf /var/lib/apt/lists/*
 
 # Unpack cudnn
-RUN  dpkg -x /pdk_files/cudnn-local-repo*.deb /pdk_files/cudnn_extract \
-    && dpkg -x /pdk_files/cudnn_extract/var/cudnn-local-repo*/libcudnn[7-8]_*-1+cuda11.[0-9]_arm64.deb /pdk_files/cudnn \
-    && dpkg -x /pdk_files/cudnn_extract/var/cudnn-local-repo*/libcudnn[7-8]-dev_*-1+cuda11.[0-9]_arm64.deb /pdk_files/cudnn \
+RUN  dpkg -x /pdk_files/cudnn-local*-repo*.deb /pdk_files/cudnn_extract \
+    && dpkg -x /pdk_files/cudnn_extract/var/cudnn-local*-repo*/libcudnn[7-8]_*-1+cuda11.[0-9]_arm64.deb /pdk_files/cudnn \
+    && dpkg -x /pdk_files/cudnn_extract/var/cudnn-local*-repo*/libcudnn[7-8]-dev_*-1+cuda11.[0-9]_arm64.deb /pdk_files/cudnn \
     && cd /pdk_files/cudnn/usr/lib/aarch64-linux-gnu \
     && cd /pdk_files/cudnn \
     && ln -s usr/include/aarch64-linux-gnu include \
@@ -97,18 +105,23 @@ RUN  dpkg -x /pdk_files/cudnn-local-repo*.deb /pdk_files/cudnn_extract \
     && ln -s /pdk_files/cudnn/usr/include/aarch64-linux-gnu/cudnn_v[7-9].h /usr/include/cudnn.h \
     && ln -s /pdk_files/cudnn/usr/include/aarch64-linux-gnu/cudnn_version_v[7-9].h /usr/include/cudnn_version.h
 
-# Unpack libnvinfer
-RUN dpkg -x /pdk_files/libnvinfer[0-8]_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt \
-    && dpkg -x /pdk_files/libnvinfer-dev_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt \
-    && dpkg -x /pdk_files/libnvparsers[6-8]_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt \
-    && dpkg -x /pdk_files/libnvparsers-dev_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt \
-    && dpkg -x /pdk_files/libnvinfer-plugin[6-8]_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt \
-    && dpkg -x /pdk_files/libnvinfer-plugin-dev_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt \
-    && dpkg -x /pdk_files/libnvonnxparsers[6-8]_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt \
-    && dpkg -x /pdk_files/libnvonnxparsers-dev_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt
+## Extract libs required in next stop
+RUN mkdir -p /tmp/nvlibs/ \
+    && dpkg -x /pdk_files/nv-tensorrt-local-repo*.deb /tmp/nvlibs
+
+ENV NVIDIA_LIBS /tmp/nvlibs/var/nv-tensorrt-local-repo-*
+## Unpack libnvinfer
+RUN dpkg -x $NVIDIA_LIBS/libnvinfer[0-8]_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt \
+    && dpkg -x $NVIDIA_LIBS/libnvinfer-dev_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt \
+    && dpkg -x $NVIDIA_LIBS/libnvparsers[6-8]_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt \
+    && dpkg -x $NVIDIA_LIBS/libnvparsers-dev_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt \
+    && dpkg -x $NVIDIA_LIBS/libnvinfer-plugin[6-8]_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt \
+    && dpkg -x $NVIDIA_LIBS/libnvinfer-plugin-dev_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt \
+    && dpkg -x $NVIDIA_LIBS/libnvonnxparsers[6-8]_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt \
+    && dpkg -x $NVIDIA_LIBS/libnvonnxparsers-dev_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt
 
 # Clean up debs
-RUN rm -rf /pdk_files/*.deb
+#RUN rm -rf /pdk_files/*.deb
 
 # create stub libraries
 RUN cd /pdk_files/tensorrt \
