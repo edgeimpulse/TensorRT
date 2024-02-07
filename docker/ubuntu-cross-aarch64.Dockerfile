@@ -73,12 +73,13 @@ COPY scripts/stubify.sh /pdk_files
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
 
-## Fix keys
+## Unpack CUDA and fix keys
 RUN mkdir -p /tmp/aarch64 /tmp/ubuntu \
     && dpkg -x /pdk_files/cuda-repo-cross-aarch64*.deb /tmp/aarch64 \
     && dpkg -x /pdk_files/cuda-repo-ubuntu*_amd64.deb /tmp/ubuntu \
-    && cp /tmp/aarch64/var/cuda-repo-cross-aarch64-ubuntu2004-11-4-local/cuda-647817BB-keyring.gpg /usr/share/keyrings/ \
-    && cp /tmp/ubuntu/var/cuda-repo-ubuntu2004-11-4-local/cuda-A7CFCDD0-keyring.gpg /usr/share/keyrings \
+    && cp /tmp/aarch64/var/cuda-repo-cross-*-local/cuda-*-keyring.gpg /usr/share/keyrings/ \
+    && cp /tmp/ubuntu/var/cuda-repo-*-local/cuda-*-keyring.gpg /usr/share/keyrings \
+    && dpkg -x /tmp/aarch64/var/cuda-repo-cross-*-local/cuda-cudart-cross-aarch64-*-1_all.deb /pdk_files/cudart \
     && rm -rf /tmp/aarch64 /tmp/ubuntu
 
 # Install CUDA cross compile toolchain
