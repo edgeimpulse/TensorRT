@@ -121,7 +121,7 @@ RUN dpkg -x $NVIDIA_LIBS/libnvinfer[0-8]_*-1+cuda11.[0-9]_arm64.deb /pdk_files/t
     && dpkg -x $NVIDIA_LIBS/libnvonnxparsers-dev_*-1+cuda11.[0-9]_arm64.deb /pdk_files/tensorrt
 
 # Clean up debs
-#RUN rm -rf /pdk_files/*.deb
+RUN rm -rf /pdk_files/*.deb
 
 # create stub libraries
 RUN cd /pdk_files/tensorrt \
