@@ -134,10 +134,20 @@ RUN cd /pdk_files/tensorrt \
             CC=aarch64-linux-gnu-gcc /pdk_files/stubify.sh lib${x}.so stubs/lib${x}.so \
        ; done
 
+# TensorRT (wrapper API, "OSS")
+COPY . /workspace/TensorRT/
+RUN cd /workspace/TensorRT && \
+    git submodule update --init --recursive
+
 # Set environment and working directory
 ENV TRT_LIBPATH /pdk_files/tensorrt/lib
 ENV TRT_OSSPATH /workspace/TensorRT
 WORKDIR /workspace
+
+# Build libraries
+RUN cd ${TRT_OSSPATH} \
+    && chmod u+x ei/build-ei-lib.sh \
+    && ./ei/build-ei-lib.sh
 
 USER trtuser
 RUN ["/bin/bash"]
