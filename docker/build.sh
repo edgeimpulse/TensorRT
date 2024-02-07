@@ -44,7 +44,7 @@ echo "Building container:"
 echo "> docker build $docker_args"
 docker build $docker_args
 
-#echo "Exporting libei_debug.a"
-#containerId=$(docker create --platform linux/amd64 tensorrt:latest)
-#docker cp "$containerId":/workspace/TensorRT/build/out/libei_debug.a docker/
-#docker rm "$containerId"
+echo "Exporting libei_debug.a"
+containerId=$(docker create --platform linux/amd64 tensorrt:latest)
+docker cp "$containerId":/workspace/TensorRT/build/out/libei_debug.a docker/
+docker rm "$containerId"
