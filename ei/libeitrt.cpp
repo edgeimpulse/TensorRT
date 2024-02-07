@@ -33,10 +33,12 @@
 
 #include "libeitrt.h"
 
+using namespace std;
+
 class EiTrt
 {
     template <typename T>
-    using SampleUniquePtr = std::unique_ptr<T, samplesCommon::InferDeleter>;
+    using SampleUniquePtr = unique_ptr<T, samplesCommon::InferDeleter>;
 
 public:
     EiTrt(const samplesCommon::OnnxSampleParams& params)
@@ -61,11 +63,11 @@ public:
     samplesCommon::OnnxSampleParams mParams; //!< The parameters for the sample.
 
     nvinfer1::Dims mOutputDims; //!< The dimensions of the output to the network.
-    std::string input_name;
-    std::string output_name;
+    string input_name;
+    string output_name;
     int32_t input_size; //calculated from dimensions
 
-    std::shared_ptr<nvinfer1::ICudaEngine> mEngine; //!< The TensorRT engine used to run the network
+    shared_ptr<nvinfer1::ICudaEngine> mEngine; //!< The TensorRT engine used to run the network
     SampleUniquePtr<nvinfer1::IExecutionContext> context;
 
     //!
@@ -191,15 +193,15 @@ ICudaEngine* EiTrt::getCudaEngine(const char* model_file_name)
 //!
 bool EiTrt::build(const char* model_file_name)
 {
-    mEngine = std::shared_ptr<nvinfer1::ICudaEngine>( getCudaEngine(model_file_name), samplesCommon::InferDeleter() );
+    mEngine = shared_ptr<nvinfer1::ICudaEngine>( getCudaEngine(model_file_name), samplesCommon::InferDeleter() );
     if (!mEngine)
     {
         return false;
     }
 
     auto mInputDims = mEngine->getBindingDimensions(0);
-    sample::gLogInfo << "Input tensor name: " << mEngine->getBindingName(0) << std::endl;
-    sample::gLogInfo << "Output tensor name: " << mEngine->getBindingName(1) << std::endl;
+    sample::gLogInfo << "Input tensor name: " << mEngine->getBindingName(0) << endl;
+    sample::gLogInfo << "Output tensor name: " << mEngine->getBindingName(1) << endl;
     input_name = mEngine->getBindingName(0);
     output_name = mEngine->getBindingName(1);
     sample::gLogInfo << "Parsing input dimensions:\n";
@@ -341,15 +343,15 @@ bool EiTrt::reportOutput(const samplesCommon::BufferManager& buffers, float* out
 
         // print outputs
         // disabled for YOLOv5
-        //sample::gLogInfo << "Output:" << std::endl;
+        //sample::gLogInfo << "Output:" << endl;
         //for (int i = 0; i < output_size; i++)
         //{
-        //    sample::gLogInfo << " Prob " << i << "  " << std::fixed << std::setw(5) << std::setprecision(4) << output[i]
+        //    sample::gLogInfo << " Prob " << i << "  " << fixed << setw(5) << setprecision(4) << output[i]
         //                    << " "
-        //                    << "Class " << i << ": " << std::string(int(std::floor(output[i] * 10 + 0.5f)), '*')
-        //                    << std::endl;
+        //                    << "Class " << i << ": " << string(int(floor(output[i] * 10 + 0.5f)), '*')
+        //                    << endl;
         //}
-        //sample::gLogInfo << std::endl;
+        //sample::gLogInfo << endl;
         return true;
     } else {
         sample::gLogError << " Failed to get buffer by output tensor name";
@@ -373,7 +375,7 @@ samplesCommon::OnnxSampleParams initializeSampleParams()
 EiTrt* libeitrt::create_EiTrt(const char* model_file_name, bool debug)
 {
     if(!debug) { sample::setReportableSeverity( ILogger::Severity::kERROR ); }
-    sample::gLogInfo << "EI TensorRT lib v1.4" << std::endl;
+    sample::gLogInfo << "EI TensorRT lib v1.4" << endl;
     auto handle = new EiTrt(initializeSampleParams());
     // TODO proper error checking and return null
     handle->build(model_file_name);
