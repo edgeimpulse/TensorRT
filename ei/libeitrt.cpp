@@ -34,6 +34,7 @@
 #include "libeitrt.h"
 
 using namespace std;
+using namespace nvinfer1;
 
 class EiTrt
 {
@@ -242,7 +243,7 @@ bool EiTrt::constructNetwork(SampleUniquePtr<nvinfer1::IBuilder>& builder,
         return false;
     }
 
-    config->setMaxWorkspaceSize(512_MiB);
+    config->setMaxWorkspaceSize(1 << 29); // 512 MB
     if (mParams.fp16)
     {
         config->setFlag(BuilderFlag::kFP16);
