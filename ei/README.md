@@ -3,7 +3,7 @@
 The `libei_debug.a` file was built from: https://github.com/edgeimpulse/TensorRT/tree/libeitrt - build using:
 
 ```
-$ sh docker/build.sh --file docker/ubuntu-cross-aarch64.Dockerfile --tag tensorrt --cuda 11.4
+$ sh docker/build.sh --file docker/ubuntu-cross-aarch64.Dockerfile --tag tensorrt --cuda 11.8.0
 ```
 
 There are comments in the Dockerfile, which you will need to read to succesfully build it. Specifically, remember to get the [jetpack_files](../README.md#optional---for-jetson-builds-only-download-the-jetpack-sdk).

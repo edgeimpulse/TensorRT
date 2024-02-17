@@ -8,6 +8,7 @@ cmake .. \
 -DTRT_OUT_DIR=/workspace/TensorRT/build/out \
 -DCMAKE_TOOLCHAIN_FILE=${TRT_OSSPATH}/cmake/toolchains/cmake_aarch64.toolchain \
 -DCUDA_VERSION=11.4 \
+-DCUDNN_VERSION=8.6 \
 -DGPU_ARCHS="53" \
 -DCUDNN_LIB=/pdk_files/cudnn/usr/lib/aarch64-linux-gnu/libcudnn.so \
 -DCUBLAS_LIB=/usr/lib/aarch64-linux-gnu/libcublas.so \
