@@ -142,7 +142,7 @@ WORKDIR /workspace
 # Build libraries
 RUN cd ${TRT_OSSPATH} \
     && chmod u+x ei/build-ei-lib.sh \
-    && ./ei/build-ei-lib.sh
+    && ./ei/build-ei-lib.sh 11.4 8.6
 
 USER trtuser
 RUN ["/bin/bash"]
