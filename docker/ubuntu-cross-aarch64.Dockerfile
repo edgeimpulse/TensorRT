@@ -127,13 +127,7 @@ RUN rm -rf /pdk_files/*.deb
 # create stub libraries
 RUN cd /pdk_files/tensorrt \
     && ln -s usr/include/aarch64-linux-gnu include \
-    && ln -s usr/lib/aarch64-linux-gnu lib \
-    && cd lib \
-    && mkdir stubs \
-    && for x in nvinfer nvparsers nvinfer_plugin nvonnxparser; \
-       do                                                     \
-            CC=aarch64-linux-gnu-gcc /pdk_files/stubify.sh lib${x}.so stubs/lib${x}.so \
-       ; done
+    && ln -s usr/lib/aarch64-linux-gnu lib
 
 # TensorRT (wrapper API, "OSS")
 COPY . /workspace/TensorRT/
