@@ -16,7 +16,7 @@ cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=${TRT_OSSPATH}/cmake/toolchains/cmake_aarch64.toolchain \
 -DCUDA_VERSION=${CUDA} \
 -DCUDNN_VERSION=${CUDNN} \
--DGPU_ARCHS="53" \
+-DGPU_ARCHS="53 62 72 87" \
 -DCUDNN_LIB=/pdk_files/cudnn/usr/lib/aarch64-linux-gnu/libcudnn.so \
 -DCUBLAS_LIB=/usr/lib/aarch64-linux-gnu/libcublas.so \
 -DCUBLASLT_LIB=/usr/lib/x86_64-linux-gnu/libcublasLt.so \
