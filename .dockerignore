@@ -1,3 +1,7 @@
-/.git*
 build*
 /third_party
+docker/libei_debug.a
+docker/cudnn
+docker/tensorrt
+docker/cudnn_extract
+docker/cudart

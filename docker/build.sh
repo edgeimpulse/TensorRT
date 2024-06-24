@@ -48,3 +48,14 @@ fi
 echo "Building container:"
 echo "> docker build $docker_args"
 docker build $docker_args
+
+echo "Exporting libei_debug.a"
+containerId=$(docker create --platform linux/amd64 tensorrt:latest)
+docker cp "$containerId":/workspace/TensorRT/build/out/libei_debug.a docker/
+echo "Exporting extracted pdk_files"
+containerId=$(docker create --platform linux/amd64 tensorrt:latest)
+docker cp "$containerId":/pdk_files/cudnn docker/
+docker cp "$containerId":/pdk_files/tensorrt docker/
+docker cp "$containerId":/pdk_files/cudart docker/
+#docker cp "$containerId":/pdk_files/cudnn_extract docker/
+docker rm "$containerId"

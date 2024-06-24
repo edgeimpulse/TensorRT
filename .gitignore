@@ -8,3 +8,8 @@ build/
 *.vcxproj
 externals/
 **/.DS_Store
+docker/libei_debug.a
+docker/cudnn
+docker/tensorrt
+docker/cudnn_extract
+docker/cudart
